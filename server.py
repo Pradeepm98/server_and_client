@@ -14,18 +14,28 @@ client_ip = client_address[0]
 client_port = client_address[1]
 print(f"Connected to client: {client_ip}:{client_port}")
 
+previous_message = None
+
 # Receive and send messages to the client
 while True:
-  # Receive data from the client
-  data = client_socket.recv(1024).decode()
-  if not data:
-    break
+    # Receive data from the client
+    data = client_socket.recv(1024).decode()
+    if not data:
+        break
 
-  print(f"Client ({client_ip}:{client_port}): {data}")
+    print(f"Client ({client_ip}:{client_port}): {data}")
 
-  # Send a response back to the client
-  response = "Message received by the server."
-  client_socket.send(response.encode())
+    # Prepare the response
+    if previous_message is None:
+        response = "0"  # For the first message
+    else:
+        response = previous_message
+
+    # Update the previous message
+    previous_message = data
+
+    # Send the response back to the client
+    client_socket.send(response.encode())
 
 # Close the connection
 client_socket.close()
