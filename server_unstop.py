@@ -29,7 +29,7 @@ while True:
             print(f"Client ({client_ip}:{client_port}): {data}")
 
             # Send a response back to the client
-            response = "Message received by the server."
+            response = "Message received by the server."+({client_ip}:{client_port})
             client_socket.send(response.encode())
 
     except ConnectionResetError:
