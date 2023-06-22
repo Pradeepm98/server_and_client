@@ -49,5 +49,5 @@ class ChatServer:
             client_socket.close()
 
 if __name__ == '__main__':
-    server = ChatServer('13.127.87.242', 1234)
+    server = ChatServer('0.0.0.0', 12345)
     server.start()
