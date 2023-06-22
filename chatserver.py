@@ -19,28 +19,37 @@ class ChatServer:
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
     def handle_client(self, client_socket):
-        while True:
-            try:
+        try:
+            # Receive the opposite client's IP and port
+            message = client_socket.recv(1024).decode('utf-8')
+            opposite_ip, opposite_port = message.split(':')
+            print(f"Received IP and port from opposite client: {opposite_ip}:{opposite_port}")
+
+            # Send the client's IP and port to the opposite client
+            client_ip, client_port = client_socket.getpeername()
+            response = f"{client_ip}:{client_port}"
+            client_socket.sendall(response.encode('utf-8'))
+
+            while True:
                 message = client_socket.recv(1024).decode('utf-8')
                 if message:
                     print(f"Received message: {message}")
-                    self.broadcast(message, client_socket)
+                    self.send_to_opposite_client(message, opposite_ip, int(opposite_port))
                 else:
                     self.remove_client(client_socket)
                     break
-            except Exception as e:
-                print(f"Error occurred: {e}")
-                self.remove_client(client_socket)
-                break
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            self.remove_client(client_socket)
 
-    def broadcast(self, message, sender_socket):
-        for client in self.clients:
-            if client != sender_socket:
-                try:
-                    client.sendall(message.encode('utf-8'))
-                except Exception as e:
-                    print(f"Error occurred while sending message: {e}")
-                    self.remove_client(client)
+    def send_to_opposite_client(self, message, opposite_ip, opposite_port):
+        try:
+            opposite_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            opposite_socket.connect((opposite_ip, opposite_port))
+            opposite_socket.sendall(message.encode('utf-8'))
+            opposite_socket.close()
+        except Exception as e:
+            print(f"Error occurred while sending message to opposite client: {e}")
 
     def remove_client(self, client_socket):
         if client_socket in self.clients:
